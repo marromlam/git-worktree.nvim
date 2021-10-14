@@ -10,10 +10,14 @@ local action_state = require("telescope.actions.state")
 local conf = require("telescope.config").values
 local git_worktree = require("git-worktree")
 
+
 local get_worktree_path = function(prompt_bufnr)
-    local selection = action_state.get_selected_entry(prompt_bufnr)
-    return selection.path
+  -- print(prompt_bufnr)
+  local selection = action_state.get_selected_entry(prompt_bufnr)
+  -- print(selection)
+  return selection.path
 end
+
 
 local switch_worktree = function(prompt_bufnr)
     local worktree_path = get_worktree_path(prompt_bufnr)
@@ -23,6 +27,7 @@ local switch_worktree = function(prompt_bufnr)
     end
 end
 
+
 local delete_worktree = function(prompt_bufnr, force)
     local worktree_path = get_worktree_path(prompt_bufnr)
     actions.close(prompt_bufnr)
@@ -31,31 +36,16 @@ local delete_worktree = function(prompt_bufnr, force)
     end
 end
 
-local create_input_prompt = function(cb)
 
-    --[[
-    local window = Window.centered({
-        width = 30,
-        height = 1
-    })
-    vim.api.nvim_buf_set_option(window.bufnr, "buftype", "prompt")
-    vim.fn.prompt_setprompt(window.bufnr, "Worktree Location: ")
-    vim.fn.prompt_setcallback(window.bufnr, function(text)
-        vim.api.nvim_win_close(window.win_id, true)
-        vim.api.nvim_buf_delete(window.bufnr, {force = true})
-        cb(text)
-    end)
-
-    vim.api.nvim_set_current_win(window.win_id)
-    vim.fn.schedule(function()
-        vim.nvim_command("startinsert")
-    end)
-    --]]
-    --
-
-    local subtree = vim.fn.input("Path to subtree > ")
+local create_input_prompt = function(cb, branch)
+  local subtree = vim.fn.input("Path to subtree [" .. branch .. "]:")
+  if subtree == "" then
+    cb("../" .. branch)
+  else
     cb(subtree)
+  end
 end
+
 
 local create_worktree = function(opts)
     opts = opts or {}
@@ -80,7 +70,7 @@ local create_worktree = function(opts)
                     else
                         print("No path to create worktree")
                     end
-                end)
+                end, branch)
             end)
 
         -- do we need to replace other default maps?
@@ -90,15 +80,12 @@ local create_worktree = function(opts)
     require("telescope.builtin").git_branches(opts)
 end
 
+
 local telescope_git_worktree = function(opts)
     opts = opts or {}
     local output = utils.get_os_command_output({"git", "worktree", "list"})
     local results = {}
-    local widths = {
-        path = 0,
-        sha = 0,
-        branch = 0
-    }
+    local widths = { path = 0, sha = 0, branch = 0 }
 
     local parse_line = function(line)
         local fields = vim.split(string.gsub(line, "%s+", " "), " ")
@@ -182,10 +169,8 @@ local telescope_git_worktree = function(opts)
     }):find()
 end
 
-return require("telescope").register_extension(
-           {
-        exports = {
-            git_worktrees = telescope_git_worktree,
-            create_git_worktree = create_worktree
-        }
-    })
+
+return require("telescope").register_extension({ exports = {
+  git_worktrees = telescope_git_worktree,
+  create_git_worktree = create_worktree
+}})
