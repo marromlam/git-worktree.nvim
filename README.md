@@ -1,5 +1,18 @@
 # git-worktree.nvim<a name="git-worktreenvim"></a>
 
+
+```bash
+repo=$1
+folder=$2
+branch=main
+
+mkdir $folder
+cd $folder && git clone --bare $repo .bare && echo "gitdir: ./.bare" > .git && git worktree add $branch && cd ..
+
+```
+
+
+
 A simple wrapper around git worktree operations, create, switch, and delete.
 There is some assumed workflow within this plugin, but pull requests are welcomed to
 fix that).

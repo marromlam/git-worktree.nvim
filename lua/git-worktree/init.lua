@@ -33,6 +33,7 @@ M.setup_git_info = function()
 
     local process_find_git_dir = function(stdout)
         if is_in_worktree then
+            -- print("=== A ===")
             -- if in worktree git dir returns absolute path
 
             -- try to find the dot git folder (non-bare repo)
@@ -57,9 +58,11 @@ M.setup_git_info = function()
                 git_worktree_root = stdout:sub(0, start - 1)
             end
         elseif stdout == "." then
+            -- print("=== B ===")
             -- we are in the root git dir
             git_worktree_root = cwd
         else
+            -- print("=== C ===")
             -- if not in worktree git dir returns relative path
             local start = stdout:find(".git")
             git_worktree_root = Path:new(
